@@ -1,26 +1,25 @@
 package ru.kata.spring.boot_security.demo.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class User {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   @Column(name = "id")
    private Long id;
 
-   @NotEmpty(message = "Имя не должно быть пустым")
    @Size(min = 2, max = 100, message = "Имя должно быть от 2 до 100 символов длиной")
    @Column(name = "username")
    private String username;
 
-   @NotEmpty(message = "Фамилие не должно быть пустым")
-   @Size(min = 2, max = 100, message = "Фамилие должно быть от 2 до 100 символов длиной")
+   @Size(min = 2, max = 100, message = "Фамилия должна быть от 2 до 100 символов длиной")
    @Column(name = "last_name")
    private String lastName;
 
@@ -29,10 +28,26 @@ public class User {
    @Column(name = "email")
    private String email;
 
+   @NotEmpty(message = "Пароль не должно быть пустым")
+   @Size(min = 2, max = 100, message = "Пароль должен быть от 2 до 100 символов длиной")
    @Column(name = "password")
    private String password;
 
+   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+   @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+   private Collection<Role> roles = new HashSet<>();
+
    public User() {}
+
+   public User(String username, String lastName, String email, String password, Collection<Role> roles) {
+      this.username = username;
+      this.lastName = lastName;
+      this.email = email;
+      this.password = password;
+      this.roles = roles;
+   }
 
    public User(String username, String lastName, String email, String password) {
       this.username = username;
@@ -81,14 +96,50 @@ public class User {
       this.password = password;
    }
 
+   public Collection<Role> getRoles() {
+      return roles;
+   }
+
+   public void setRoles(Collection<Role> roles) {
+      this.roles = roles;
+   }
+
+   public void addRoles(Role role) {
+      this.roles.add(role);
+   }
+
    @Override
    public String toString() {
       return "User{" +
               "id=" + id +
-              ", firstName='" + username + '\'' +
+              ", username='" + username + '\'' +
               ", lastName='" + lastName + '\'' +
               ", email='" + email + '\'' +
               ", password='" + password + '\'' +
+              ", roles=" + roles +
               '}';
+   }
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(id, username, lastName, email, password, roles);
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+
+      if (this == obj) return true;
+
+      if (obj == null || getClass() != obj.getClass()) return false;
+
+      User user = (User) obj;
+
+      return id == user.id
+              && Objects.equals(username, user.username)
+              && Objects.equals(lastName, user.lastName)
+              && Objects.equals(email, user.email)
+              && Objects.equals(password, user.password)
+              && Objects.equals(roles, user.roles);
+
    }
 }
