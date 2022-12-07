@@ -1,5 +1,8 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -8,8 +11,8 @@ import java.util.HashSet;
 import java.util.Objects;
 
 @Entity
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
-public class User {
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
+public class User implements UserDetails {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +36,7 @@ public class User {
    @Column(name = "password")
    private String password;
 
-   @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
    @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -68,8 +71,8 @@ public class User {
       return username;
    }
 
-   public void setUsername(String firstName) {
-      this.username = firstName;
+   public void setUsername(String username) {
+      this.username = username;
    }
 
    public String getLastName() {
@@ -118,6 +121,31 @@ public class User {
               ", password='" + password + '\'' +
               ", roles=" + roles +
               '}';
+   }
+
+   @Override
+   public Collection<? extends GrantedAuthority> getAuthorities() {
+      return roles;
+   }
+
+   @Override
+   public boolean isAccountNonExpired() {
+      return true;
+   }
+
+   @Override
+   public boolean isAccountNonLocked() {
+      return true;
+   }
+
+   @Override
+   public boolean isCredentialsNonExpired() {
+      return true;
+   }
+
+   @Override
+   public boolean isEnabled() {
+      return true;
    }
 
    @Override

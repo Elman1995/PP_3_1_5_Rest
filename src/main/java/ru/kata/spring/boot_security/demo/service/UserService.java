@@ -12,13 +12,15 @@ public interface UserService extends UserDetailsService {
 
     public List<User> getUser();
 
-    public Optional<User> getUser(Long id);
+    public User getUser(Long id);
 
     public void save(User user);
 
     public void update(Long id, User updatedUser);
 
     public void delete(Long id);
+
+    public User findByUsername(String username);
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
 
