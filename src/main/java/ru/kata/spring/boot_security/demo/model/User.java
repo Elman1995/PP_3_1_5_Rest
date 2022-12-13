@@ -37,11 +37,11 @@ public class User implements UserDetails {
    @Column(name = "password")
    private String password;
 
-   @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+   @ManyToMany(cascade = CascadeType.ALL)
    @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
-   private Set<Role> roles = new HashSet<>();;
+   private Set<Role> roles = new HashSet<Role>();
 
    public User() {}
 
@@ -110,6 +110,10 @@ public class User implements UserDetails {
 
    public void addRoles(Role role) {
       this.roles.add(role);
+   }
+
+   public void deleteRoles(Role role) {
+      this.roles.remove(role);
    }
 
    @Override

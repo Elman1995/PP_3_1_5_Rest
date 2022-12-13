@@ -71,7 +71,12 @@ public class UserServiceImpl implements UserService {
             throw new EntityNotFoundException();
         }
 
-        userRepository.delete(findUser.get());
+        User user = findUser.get();
+        for (Role role : user.getRoles()) {
+            user.deleteRoles(role);
+        }
+
+        userRepository.deleteById(id);
     }
 
     @Override
