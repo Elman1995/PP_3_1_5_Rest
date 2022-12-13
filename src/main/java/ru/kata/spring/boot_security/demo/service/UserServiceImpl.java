@@ -3,6 +3,7 @@ package ru.kata.spring.boot_security.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.kata.spring.boot_security.demo.configs.PasswordEncoderConfig;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
@@ -15,11 +16,13 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
+    private final PasswordEncoderConfig passwordEncoderConfig;
     private final UserRepository userRepository;
     private final RoleService roleService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleService roleService) {
+    public UserServiceImpl(PasswordEncoderConfig passwordEncoderConfig, UserRepository userRepository, RoleService roleService) {
+        this.passwordEncoderConfig = passwordEncoderConfig;
         this.userRepository = userRepository;
         this.roleService = roleService;
     }
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
     public void save(User user) {
         Role roleUser = roleService.findByName("ROLE_USER");
         user.addRoles(roleUser);
+        user.setPassword(passwordEncoderConfig.getPasswordEncoder().encode(user.getPassword()));
         userRepository.save(user);
     }
 
@@ -55,7 +59,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(updatedUser.getUsername());
         user.setLastName(updatedUser.getLastName());
         user.setEmail(updatedUser.getEmail());
-        user.setPassword(updatedUser.getPassword());
+        user.setPassword(passwordEncoderConfig.getPasswordEncoder().encode(updatedUser.getPassword()));
     }
 
     @Override

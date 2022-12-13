@@ -13,13 +13,10 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
     @Autowired
-    public AdminController(PasswordEncoder passwordEncoder, UserService userService) {
-        this.passwordEncoder = passwordEncoder;
+    public AdminController(UserService userService) {
         this.userService = userService;
     }
 
@@ -49,7 +46,6 @@ public class AdminController {
 
     @PostMapping()
     public String create(@ModelAttribute("user") User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.save(user);
         return "redirect:/admin/";
     }
@@ -69,7 +65,6 @@ public class AdminController {
 
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.update(id, user);
         return "redirect:/admin/";
     }
