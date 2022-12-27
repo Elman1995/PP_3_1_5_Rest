@@ -14,8 +14,7 @@ import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,18 +47,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @PostConstruct
     public User createTestAdmin() {
 
-        Role roleUser = roleService.findByName("ROLE_USER");
-        if (roleUser == null) {
-            roleUser = new Role(1L,"ROLE_USER");
-            roleService.save(roleUser);
-        }
-
-        Role roleAdmin = roleService.findByName("ROLE_ADMIN");
-        if (roleAdmin == null) {
-            roleAdmin = new Role(2L,"ROLE_ADMIN");
-            roleService.save(roleAdmin);
-        }
-
         if (userService.findByUsername("admin") == null) {
 
             User user = new User("admin", "admin", "admin@mail.com", new BCryptPasswordEncoder().encode("1234"));
@@ -72,9 +59,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             }
 
             user.setId(id);
-            user.addRoles(roleUser);
-            user.addRoles(roleAdmin);
-            userService.save(user);
+            ArrayList<String> roles = new ArrayList<String>();
+            roles.add("ROLE_USER");
+            roles.add("ROLE_ADMIN");
+            userService.save(user, roles);
 
             return user;
         }

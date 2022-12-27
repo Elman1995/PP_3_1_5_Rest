@@ -40,16 +40,48 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void save(User user) {
+    public void save(User user, List<String> roles) {
+
         Role roleUser = roleService.findByName("ROLE_USER");
-        user.addRoles(roleUser);
+        if (roleUser == null) {
+            roleUser = new Role(1L,"ROLE_USER");
+            roleService.save(roleUser);
+        }
+
+        Role roleAdmin = roleService.findByName("ROLE_ADMIN");
+        if (roleAdmin == null) {
+            roleAdmin = new Role(2L,"ROLE_ADMIN");
+            roleService.save(roleAdmin);
+        }
+
+        for (String role : roles) {
+            if (role.equals("ROLE_ADMIN")) {
+                user.addRoles(roleAdmin);
+            } else {
+                user.addRoles(roleUser);
+            }
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public void update(Long id, User updatedUser) {
+    public void update(Long id, User updatedUser, List<String> roles) {
+
+        Role roleUser = roleService.findByName("ROLE_USER");
+        if (roleUser == null) {
+            roleUser = new Role(1L,"ROLE_USER");
+            roleService.save(roleUser);
+        }
+
+        Role roleAdmin = roleService.findByName("ROLE_ADMIN");
+        if (roleAdmin == null) {
+            roleAdmin = new Role(2L,"ROLE_ADMIN");
+            roleService.save(roleAdmin);
+        }
+
         Optional<User> findUser = getUser(id);
 
         if (findUser.isEmpty()) {
@@ -60,7 +92,22 @@ public class UserServiceImpl implements UserService {
         user.setUsername(updatedUser.getUsername());
         user.setLastName(updatedUser.getLastName());
         user.setEmail(updatedUser.getEmail());
-        user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+
+        for (Role role : user.getRoles()) {
+            user.deleteRoles(role);
+        }
+
+        for (String role : roles) {
+            if (role.equals("ROLE_ADMIN")) {
+                user.addRoles(roleAdmin);
+            } else {
+                user.addRoles(roleUser);
+            }
+        }
+
+        if(!updatedUser.getPassword().isEmpty())
+            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+
     }
 
     @Override

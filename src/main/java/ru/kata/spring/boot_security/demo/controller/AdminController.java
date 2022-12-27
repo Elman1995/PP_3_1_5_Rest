@@ -1,14 +1,13 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
-
-import java.util.Optional;
+import java.security.Principal;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/admin")
@@ -20,59 +19,36 @@ public class AdminController {
         this.userService = userService;
     }
 
-    @GetMapping()
-    public String index(Model model) {
+    @GetMapping
+    public String getHomePage(Model model, Principal principal) {
+        model.addAttribute("user", userService.findByUsername(principal.getName()));
         model.addAttribute("users", userService.getUser());
-        return "index";
+        model.addAttribute("newUser", new User());
+        return "admin";
     }
 
-    @GetMapping("/{id}")
-    public String show(@PathVariable("id") Long id, Model model) {
-
-        Optional<User> findUser = userService.getUser(id);
-        if (findUser.isEmpty()) {
-            model.addAttribute("user", new User());
-        } else {
-            model.addAttribute("user", findUser.get());
-        }
-
-        return "show";
+    @PostMapping("/newUser")
+    public String createUser(User user, String role) {
+        userService.save(user, Collections.singletonList(role));
+        return "redirect:/admin";
     }
 
-    @GetMapping("/new")
-    public String newPerson(@ModelAttribute("user") User user) {
-        return "new";
+    @PostMapping("/{id}")
+    public String update(@ModelAttribute("newUser") User newUser, String role, @PathVariable Long id) {
+        userService.update(id, newUser, Collections.singletonList(role));
+        return "redirect:/admin";
     }
 
-    @PostMapping()
-    public String create(@ModelAttribute("user") User user) {
-        userService.save(user);
-        return "redirect:/admin/";
+    @GetMapping("deleteUser/{id}")
+    public String deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return "redirect:/admin";
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(Model model, @PathVariable("id") Long id) {
-
-        Optional<User> findUser = userService.getUser(id);
-        if (findUser.isEmpty()) {
-            model.addAttribute("user", new User());
-        } else {
-            model.addAttribute("user", findUser.get());
-        }
-
-        return "edit";
-    }
-
-    @PatchMapping("/{id}")
-    public String update(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-        userService.update(id, user);
-        return "redirect:/admin/";
-    }
-
-    @DeleteMapping("/{id}")
+    @PostMapping("/deleteUser/{id}")
     public String delete(@PathVariable("id") Long id) {
         userService.delete(id);
-        return "redirect:/admin/";
+        return "redirect:/admin";
     }
 
 }
