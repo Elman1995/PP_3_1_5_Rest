@@ -8,8 +8,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import ru.kata.spring.boot_security.demo.service.UserDetailsServiceImpl;
-import ru.kata.spring.boot_security.demo.service.UserService;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -17,19 +16,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoderConfig passwordEncoderConfig;
     private final SuccessUserHandler successUserHandler;
-    private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserDetailsService userDetailsService;
 
     @Autowired
-    public WebSecurityConfig(PasswordEncoderConfig passwordEncoderConfig, SuccessUserHandler successUserHandler, UserDetailsServiceImpl userDetailsServiceImpl) {
+    public WebSecurityConfig(PasswordEncoderConfig passwordEncoderConfig, SuccessUserHandler successUserHandler, UserDetailsService userDetailsService) {
         this.passwordEncoderConfig = passwordEncoderConfig;
         this.successUserHandler = successUserHandler;
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
+        this.userDetailsService = userDetailsService;
     }
 
     protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
         http
                 .authorizeRequests()
-                .antMatchers("/users").hasAnyRole("USER", "ADMIN")
+                .antMatchers("/").permitAll()
+                .antMatchers("/user").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
@@ -42,14 +43,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     protected void configure(AuthenticationManagerBuilder authentication) throws Exception {
-        authentication.userDetailsService(userDetailsServiceImpl);
+        authentication.userDetailsService(userDetailsService);
     }
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoderConfig.getPasswordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userDetailsServiceImpl);
         return daoAuthenticationProvider;
     }
 

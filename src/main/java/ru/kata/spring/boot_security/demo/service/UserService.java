@@ -14,9 +14,7 @@ public interface UserService {
 
     public Optional<User> getUser(Long id);
 
-    public void save(User user, List<String> role);
-
-    public void update(Long id, User updatedUser, List<String> role);
+    public void save(User user);
 
     public void delete(Long id);
 
