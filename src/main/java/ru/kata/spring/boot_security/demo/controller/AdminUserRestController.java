@@ -14,20 +14,13 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
-public class AdminRESTController {
+public class AdminUserRestController {
 
     private final UserService userService;
-    private final RoleService roleService;
 
     @Autowired
-    public AdminRESTController(UserService userService, RoleService roleService) {
+    public AdminUserRestController(UserService userService, RoleService roleService) {
         this.userService = userService;
-        this.roleService = roleService;
-    }
-
-    @GetMapping("/getRoles")
-    public ResponseEntity<List<Role>> getAllRoles() {
-        return new ResponseEntity<>(roleService.getRole(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -54,7 +47,6 @@ public class AdminRESTController {
 
     @PatchMapping("/update/{id}")
     public ResponseEntity<User> updateUser(@RequestBody User user) {
-        System.out.println("тут работает");
         userService.save(user);
         return new ResponseEntity<>(HttpStatus.OK);
     }

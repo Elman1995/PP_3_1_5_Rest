@@ -15,7 +15,7 @@ async function showDeleteModal(id) {
 
     $('#rolesDeleteUser').empty();
 
-    await fetch("http://localhost:8080/api/admin/getRoles")
+    await fetch("http://localhost:8080/api/role/getRoles")
         .then(res => res.json())
         .then(roles => {
             roles.forEach(role => {
